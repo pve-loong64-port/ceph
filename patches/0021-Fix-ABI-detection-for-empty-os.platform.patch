@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Ivan A. Melnikov" <iv@altlinux.org>
+Date: Thu, 17 Aug 2023 14:15:03 +0400
+Subject: [PATCH] Fix ABI detection for empty 'os.platform'
+
+`in` operator in bjam always returns true if its first
+argument has no elements[1]. This means that if `os.platform`
+is empty (not detected), the construction introduced
+in commit d039c8e4da79dbc76481236249e22892bfdde047 sets
+ABI to `aapcs` on all platforms where `os.platform` is
+empty, including, e.g. riscv64, and breaks build there.
+
+This commit refactors the condition to use '=' operator,
+to make sure that when `os.platform` is empty we get
+the default ABI value, and thus fixes build on riscv64.
+
+[1] https://www.boost.org/doc/libs/1_83_0/tools/build/doc/html/index.html#jam.language.flow_of_control
+
+Fixes: d039c8e4da79dbc76481236249e22892bfdde047
+---
+ src/boost/libs/context/boost-context-features.jam | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/boost/libs/context/boost-context-features.jam b/src/boost/libs/context/boost-context-features.jam
+index ff3265e2a7..69ac3105e4 100644
+--- a/src/boost/libs/context/boost-context-features.jam
++++ b/src/boost/libs/context/boost-context-features.jam
+@@ -39,7 +39,8 @@ local rule default_abi ( )
+     local tmp = sysv ;
+     if [ os.name ] = "NT" { tmp = ms ; }
+     else if [ os.name ] = "CYGWIN" { tmp = ms ; }
+-    else if [ os.platform ] in "ARM" "ARM64" { tmp = aapcs ; }
++    else if [ os.platform ] = "ARM" { tmp = aapcs ; }
++    else if [ os.platform ] = "ARM64" { tmp = aapcs ; }
+     else if [ os.platform ] = "MIPS32" { tmp = o32 ; }
+     else if [ os.platform ] = "MIPS64" { tmp = n64 ; }
+     return $(tmp) ;
+-- 
+2.47.3
+

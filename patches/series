@@ -19,3 +19,6 @@
 0015-bluefs-truncate-unused-allocation-on-close.patch
 0016-bluefs-fix-use_direct_io-override.patch
 0017-bluefs-acquire-file-lock-in-truncate.patch
+0019-arrow-fast_float-add-loong64-support.patch
+0020-support-loongarch64-for-rocksdb-10036.patch
+0021-Fix-ABI-detection-for-empty-os.platform.patch
