@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kaiyang Wu <origincode@aosc.io>
+Date: Tue, 12 May 2026 15:12:27 +0800
+Subject: [PATCH] arrow/fast_float: add loong64 support
+
+Signed-off-by: Kaiyang Wu <origincode@aosc.io>
+---
+ src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h b/src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
+index 7173201267..c94be8ee2e 100644
+--- a/src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
++++ b/src/arrow/cpp/src/arrow/vendored/fast_float/float_common.h
+@@ -27,7 +27,7 @@
+ #endif
+ 
+ #if (defined(__x86_64) || defined(__x86_64__) || defined(_M_X64)   \
+-       || defined(__amd64) || defined(__aarch64__) || defined(_M_ARM64) \
++       || defined(__amd64) || defined(__aarch64__) || defined(_M_ARM64) || defined(__loongarch__) \
+        || defined(__MINGW64__)                                          \
+        || defined(__s390x__)                                            \
+        || (defined(__ppc64__) || defined(__PPC64__) || defined(__ppc64le__) || defined(__PPC64LE__)) )
+-- 
+2.47.3
+
