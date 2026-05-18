@@ -120,7 +120,7 @@ Build-Depends: automake,
                systemtap-sdt-dev <pkg.ceph.crimson>,
                uuid-dev <pkg.ceph.check>,
                uuid-runtime,
-               valgrind,
+               valgrind [!loong64],
                xfslibs-dev,
                xmlstarlet <pkg.ceph.check>,
                nasm [amd64],
@@ -1078,7 +1078,7 @@ Description: debugging symbols for radosgw
  This package contains debugging symbols for radosgw.
 
 Package: ceph-test
-Architecture: linux-any
+Architecture: amd64 arm64 armhf i386 mips mipsel mips64 mips64el powerpc ppc64 ppc64el s390x
 Depends: ceph-common,
          curl,
          jq,
@@ -1092,7 +1092,7 @@ Description: Ceph test and benchmarking tools
  This package contains tools for testing and benchmarking Ceph.
 
 Package: ceph-test-dbg
-Architecture: linux-any
+Architecture: amd64 arm64 armhf i386 mips mipsel mips64 mips64el powerpc ppc64 ppc64el s390x
 Section: debug
 Priority: extra
 Depends: ceph-common (= ${binary:Version}),
