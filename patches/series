@@ -50,3 +50,8 @@
 0050-mgr-osd_perf_query-fix-ivalid-escape-sequence.patch
 0051-mgr-zabbix-fix-invalid-escape-sequences.patch
 0052-pybind-rbd-disable-on_progress-callbacks-to-prevent-.patch
+0053-FROMEXT-Add-support-for-LoongArch.patch
+0054-FROMEXT-Rename-mips1-to-mips.patch
+0055-FROMEXT-Add-support-for-LoongArch.patch
+0056-FROMEXT-support-loongarch64-for-rocksdb-10036.patch
+0057-BACKPORT-FROMEXT-Support-LoongArch64.patch

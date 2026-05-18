@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zhang Na <zhangna@loongson.cn>
+Date: Mon, 19 Sep 2022 15:02:01 +0800
+Subject: [PATCH] FROMEXT: Add support for LoongArch
+
+Link: https://github.com/boostorg/boost/commit/86aab3d4493be51ccbd909ec279ea34589831d2b
+Signed-off-by: Kaiyang Wu <wukaiyang@loongfans.cn>
+---
+ src/boost/boostcpp.jam | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/boost/boostcpp.jam b/src/boost/boostcpp.jam
+index 10d4eb3baa..d3fdbe2e15 100644
+--- a/src/boost/boostcpp.jam
++++ b/src/boost/boostcpp.jam
+@@ -634,7 +634,7 @@ rule address-model ( )
+     return <conditional>@boostcpp.deduce-address-model ;
+ }
+ 
+-local deducable-architectures = arm mips power riscv s390x sparc x86 combined ;
++local deducable-architectures = arm loongarch mips power riscv s390x sparc x86 combined ;
+ feature.feature deduced-architecture : $(deducable-architectures) : propagated optional composite hidden ;
+ for a in $(deducable-architectures)
+ {
+@@ -645,9 +645,10 @@ rule deduce-architecture ( properties * )
+ {
+     local result ;
+     local filtered = [ toolset-properties $(properties) ] ;
+-    local names = arm mips power riscv s390x sparc x86 combined ;
++    local names = arm loongarch mips power riscv s390x sparc x86 combined ;
+     local idx = [ configure.find-builds "default architecture" : $(filtered)
+         : /boost/architecture//arm
++        : /boost/architecture//loongarch
+         : /boost/architecture//mips
+         : /boost/architecture//power
+         : /boost/architecture//riscv

@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: YunQiang Su <wzssyqa@gmail.com>
+Date: Thu, 22 Jul 2021 16:13:45 +0800
+Subject: [PATCH] FROMEXT: Rename mips1 to mips
+
+In fact mips1 is now used for all mips revisions.
+
+Link: https://github.com/boostorg/boost/commit/d4e6d3b673eb22356bdf0e3e18641860a6fe2880
+Signed-off-by: Kaiyang Wu <wukaiyang@loongfans.cn>
+---
+ src/boost/boostcpp.jam | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/boost/boostcpp.jam b/src/boost/boostcpp.jam
+index 082536e2a5..10d4eb3baa 100644
+--- a/src/boost/boostcpp.jam
++++ b/src/boost/boostcpp.jam
+@@ -634,7 +634,7 @@ rule address-model ( )
+     return <conditional>@boostcpp.deduce-address-model ;
+ }
+ 
+-local deducable-architectures = arm mips1 power riscv s390x sparc x86 combined ;
++local deducable-architectures = arm mips power riscv s390x sparc x86 combined ;
+ feature.feature deduced-architecture : $(deducable-architectures) : propagated optional composite hidden ;
+ for a in $(deducable-architectures)
+ {
+@@ -645,10 +645,10 @@ rule deduce-architecture ( properties * )
+ {
+     local result ;
+     local filtered = [ toolset-properties $(properties) ] ;
+-    local names = arm mips1 power riscv s390x sparc x86 combined ;
++    local names = arm mips power riscv s390x sparc x86 combined ;
+     local idx = [ configure.find-builds "default architecture" : $(filtered)
+         : /boost/architecture//arm
+-        : /boost/architecture//mips1
++        : /boost/architecture//mips
+         : /boost/architecture//power
+         : /boost/architecture//riscv
+         : /boost/architecture//s390x
