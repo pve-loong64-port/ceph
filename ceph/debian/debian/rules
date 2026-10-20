@@ -51,6 +51,9 @@ endif
 ifeq ($(SCCACHE), true)
 extraopts += -DWITH_SCCACHE=ON
 endif
+ifeq ($(DEB_HOST_ARCH), loong64)
+  extraopts += -DWITH_BREAKPAD=OFF
+endif
 
 ifeq ($(DWZ), false)
 override_dh_dwz:
