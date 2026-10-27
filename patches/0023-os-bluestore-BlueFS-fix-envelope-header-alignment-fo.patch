@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ming Lei <ming.lei@clyso.com>
+Date: Wed, 12 Aug 2026 06:45:44 -0500
+Subject: [PATCH] os/bluestore/BlueFS: fix envelope header alignment for non-4K
+ page hosts
+
+The envelope-header assert in append_try_flush() requires the memory
+address of a new header to mirror its file position modulo
+CEPH_PAGE_SIZE. CEPH_PAGE_SIZE is the host VM page size resolved at
+runtime, but the write path only keeps the two positions congruent at
+the smaller of the page size and the BlueFS block size: envelope
+flushes pad the on-disk stream to super.block_size, while fresh
+appender chunks are page-aligned allocations.
+
+On hosts whose page size exceeds the BlueFS block size (16K Apple
+Silicon, 64K aarch64 kernels) a block-aligned WAL position is usually
+not page-aligned, so the assert fires on ordinary RocksDB WAL writes
+and every OSD aborts at startup. Direct I/O only requires block-size
+memory alignment (see KernelDevice's
+rebuild_aligned_size_and_memory), so assert the congruence the code
+actually maintains: modulo min(CEPH_PAGE_SIZE, super.block_size).
+
+Also round up instead of truncating in the FileWriter appender sizing:
+with bluefs_alloc_size at or below the page size (e.g. 4K alloc on a
+16K-page host) min_pages integer-truncated to 0, making refill()
+allocate nothing so append_hole() fell back to an unaligned buffer -
+the assert would then fire even at block-size granularity.
+
+Introduced by 4c03bbea4437 ("os/bluestore/bluefs: Add assert if write
+buffer is not page aligned"); first released in v20.2.3.
+
+Fixes: https://tracker.ceph.com/issues/79141
+Signed-off-by: Ming Lei <ming.lei@clyso.com>
+(cherry picked from commit 0479d49eff70d09ccde516c029929f5d39a29c27)
+---
+ src/os/bluestore/BlueFS.cc | 7 ++++++-
+ src/os/bluestore/BlueFS.h  | 7 ++++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/src/os/bluestore/BlueFS.cc b/src/os/bluestore/BlueFS.cc
+index d3c4b752434..13cab0638be 100644
+--- a/src/os/bluestore/BlueFS.cc
++++ b/src/os/bluestore/BlueFS.cc
+@@ -4085,7 +4085,12 @@ void BlueFS::append_try_flush(FileWriter *h, const char* buf, size_t len)/*_WF_L
+       h->envelope_head_filler = h->append_hole(File::envelope_t::head_size());
+       uint32_t pos1 = h->get_effective_write_pos() - File::envelope_t::head_size();
+       uint32_t pos2 = reinterpret_cast<uintptr_t>(h->envelope_head_filler.c_str());
+-      ceph_assert(p2aligned(pos1 ^ pos2, CEPH_PAGE_SIZE));
++      // Buffer memory must mirror the on-disk position, but only up to
++      // the smaller of the page size (alignment of fresh appender
++      // chunks) and the block size (padding granularity of envelope
++      // flushes) - the two can differ in either direction.
++      ceph_assert(p2aligned(pos1 ^ pos2,
++                            std::min<uint32_t>(CEPH_PAGE_SIZE, super.block_size)));
+     }
+     size_t max_size = 1ull << 30; // cap to 1GB
+     while (len > 0) {
+diff --git a/src/os/bluestore/BlueFS.h b/src/os/bluestore/BlueFS.h
+index 9db3f3fec41..22a39dde111 100644
+--- a/src/os/bluestore/BlueFS.h
++++ b/src/os/bluestore/BlueFS.h
+@@ -423,7 +423,12 @@ public:
+     FileWriter(FileRef f, unsigned super_block_size)
+       : file(std::move(f))
+       , buffer_appender(buffer.get_page_aligned_appender(
+-        std::max<uint64_t>(g_conf()->bluefs_alloc_size, 2 * super_block_size) / CEPH_PAGE_SIZE))
++        // round up: when CEPH_PAGE_SIZE exceeds the wanted capacity this
++        // must not truncate to 0 pages, or refill() allocates nothing and
++        // append_hole() falls back to an unaligned buffer
++        p2roundup<uint64_t>(
++          std::max<uint64_t>(g_conf()->bluefs_alloc_size, 2 * super_block_size),
++          CEPH_PAGE_SIZE) / CEPH_PAGE_SIZE))
+       , envelope_head_filler() {
+       ++file->num_writers;
+       iocv.fill(nullptr);
